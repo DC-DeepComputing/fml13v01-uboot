@@ -414,7 +414,6 @@ static int sf_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
 	ofnode remote;
 	const char *compat;
 	struct display_plat *disp_uc_plat;
-	u8 edid[EDID_EXT_SIZE];
 	int panel_bits_per_colour;
 	int try_cnt = 10;
 
@@ -506,21 +505,16 @@ static int sf_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
 		while (try_cnt-- > 0) {
 			ret = device_probe(disp);
 			if (!ret) {
-				ret = display_read_edid(disp, edid, sizeof(edid));
-				if (ret <= 0) {
-					pr_err("%s: Failed to read edid\n", __func__);
+				ret = display_read_timing(disp, &timing);
+				if (ret) {
+					pr_err("%s: Failed to read timings\n", __func__);
 					ret = -EACCES;
 				}
 				else {
-					ret = edid_get_timing(edid, sizeof(edid), &timing, &panel_bits_per_colour);
-					if (ret)
-						pr_err("%s: Failed to get edid timing\n", __func__);
-					else {
-						if (timing.hactive.typ == 2256 && timing.vactive.typ == 1504)
-							gBuiltinLCDActive = true;
-						pr_err("Display output: %s\n", gBuiltinLCDActive ? "Build-in LCD" : "HDMI");
-						break;
-					}
+					if (timing.hactive.typ == 2256 && timing.vactive.typ == 1504)
+						gBuiltinLCDActive = true;
+					pr_err("Display output: %s\n", gBuiltinLCDActive ? "Build-in LCD" : "HDMI");
+					break;
 				}
 			}
 
