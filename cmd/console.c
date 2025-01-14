@@ -43,6 +43,21 @@ static int do_coninfo(struct cmd_tbl *cmd, int flag, int argc,
 	return 0;
 }
 
+static int do_cls(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+{
+	struct udevice *dev;
+	int ret;
+
+	ret = uclass_get_device(UCLASS_VIDEO, 0, &dev);
+	if (ret)
+		return ret;
+
+	video_clear(dev);
+	env_set("stdout", "serial,vidconsole");
+
+	printf("\x1b[2J\x1b[H");
+	return 0;
+}
 
 /***************************************************/
 
@@ -50,4 +65,10 @@ U_BOOT_CMD(
 	coninfo,	3,	1,	do_coninfo,
 	"print console devices and information",
 	""
+);
+
+U_BOOT_CMD(
+    cls, 1, 1, do_cls,
+    "Clear screen",
+    ""
 );

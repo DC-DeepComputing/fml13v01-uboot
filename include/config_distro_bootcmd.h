@@ -469,6 +469,7 @@
 		"echo Scanning ${devtype} "                               \
 				"${devnum}:${distro_bootpart}...; "       \
 		"for prefix in ${boot_prefixes}; do "                     \
+			"cls; "                     \
 			"run scan_dev_for_extlinux; "                     \
 			"run scan_dev_for_scripts; "                      \
 		"done;"                                                   \

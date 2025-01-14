@@ -30,7 +30,7 @@ CONFIG_SPI_BOOT=y
 CONFIG_USE_BOOTARGS=y
 CONFIG_BOOTARGS="console=tty1 console=ttyS0,115200  debug rootwait  earlycon=sbi"
 CONFIG_USE_BOOTCOMMAND=y
-CONFIG_BOOTCOMMAND="sleep 2;usb start;run efi_boot_env;run sdk_boot_env; run distro_boot_env"
+CONFIG_BOOTCOMMAND="sleep 2;usb start;cls;run efi_boot_env;run sdk_boot_env; run distro_boot_env"
 CONFIG_USE_PREBOOT=y
 CONFIG_PREBOOT="run chipa_set_uboot;"
 CONFIG_DEFAULT_FDT_FILE="/boot/dtbs/starfive/jh7110-deepcomputing-fml13v01.dtb"
@@ -168,3 +168,4 @@ CONFIG_DISPLAY_STARFIVE_HDMI=y
 CONFIG_DISPLAY_STARFIVE_MIPI=y
 CONFIG_VIDEO_NW_MIPI_DSI=y
 CONFIG_OF_LIBFDT_OVERLAY=y
+CONFIG_SYS_WHITE_ON_BLACK=y
