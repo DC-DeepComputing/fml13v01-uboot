@@ -39,54 +39,22 @@ static void inno_hdmi_detect(struct sf_hdmi_priv *priv)
 	hdmi_write(priv,val, 0x1b0); //set 0x1b0[2] to 1'b1
 	hdmi_write(priv,0xf, 0x1cc); //set 0x1cc[3:0] to 4'b1111
 	//while(!(hdmi_read(0x1cd)  == 0x55));
-
-	if (!gBuiltinLCDActive) {
 		/*turn on pre-PLL*/
-		val = hdmi_read(priv,0x1a0);
-		val &= ~(0x1);
-		hdmi_write(priv,val, 0x1a0);
-		/*turn on post-PLL*/
-		val = hdmi_read(priv,0x1aa);
-		val &= ~(0x1);
-		hdmi_write(priv,val, 0x1aa);
+	val = hdmi_read(priv,0x1a0);
+	val &= ~(0x1);
+	hdmi_write(priv,val, 0x1a0);
+	/*turn on post-PLL*/
+	val = hdmi_read(priv,0x1aa);
+	val &= ~(0x1);
+	hdmi_write(priv,val, 0x1aa);
+	/*wait for pre-PLL and post-PLL lock*/
+	while(!(hdmi_read(priv,0x1a9) & 0x1));
+	while(!(hdmi_read(priv,0x1af) & 0x1));
+	/*turn on LDO*/
+	hdmi_write(priv,0x7, 0x1b4);
+	/*turn on serializer*/
+	hdmi_write(priv,0x70, 0x1be);
 
-		/*wait for pre-PLL and post-PLL lock*/
-		while(!(hdmi_read(priv,0x1a9) & 0x1));
-		while(!(hdmi_read(priv,0x1af) & 0x1));
-
-		/*turn on LDO*/
-		hdmi_write(priv,0x7, 0x1b4);
-		/*turn on serializer*/
-		hdmi_write(priv,0x70, 0x1be);
-	}
-	else {
-		hdmi_write(priv,0x1, 0x1a0);
-		hdmi_write(priv,0xf, 0x1aa);
-		hdmi_write(priv,0x1, 0x1a1);
-		hdmi_write(priv,0xf0, 0x1a2);
-		hdmi_write(priv,0xeb, 0x1a3);
-		hdmi_write(priv,0x25, 0x1a4);
-		hdmi_write(priv,0x3, 0x1a5);
-		hdmi_write(priv,0x64, 0x1a6);
-		hdmi_write(priv,0x1, 0x1ab);
-		hdmi_write(priv,0x14, 0x1ac);
-		hdmi_write(priv,0x1, 0x1ad);
-		hdmi_write(priv,0xe, 0x1aa);
-		hdmi_write(priv,0xc0, 0x1a2);
-		hdmi_write(priv,0xd6, 0x1d3);
-		hdmi_write(priv,0xa3, 0x1d2);
-		hdmi_write(priv,0xb0, 0x1d1);
-		hdmi_write(priv,0x0, 0x1a0);
-		
-		/*wait for pre-PLL and post-PLL lock*/
-		while(!(hdmi_read(priv,0x1a9) & 0x1));
-		while(!(hdmi_read(priv,0x1af) & 0x1));
-
-		/*turn on LDO*/
-		hdmi_write(priv,0x7, 0x1b4);
-		/*turn on serializer*/
-		hdmi_write(priv,0x71, 0x1be);
-	}
 }
 
 static void inno_hdmi_tx_phy_power_down(struct sf_hdmi_priv *priv)
@@ -405,6 +373,98 @@ static void inno_hdmi_config_3840x2160p30(struct sf_hdmi_priv *priv)
 	return;
 }
 
+static void inno_hdmi_config_2256x1504p60(struct sf_hdmi_priv *priv)
+{
+	const reg_value_t cfg_pll_data[] = {
+		/* config pll: 2256x1504p, 60hz*/
+		{0x1a0, 0x01},
+		{0x1aa, 0x0f},
+		{0x1a1, 0x01},
+		{0x1a2, 0xf0},
+		{0x1a3, 0xeb},
+		{0x1a4, 0x25},
+		{0x1a5, 0x03},
+		{0x1a6, 0x64},
+		{0x1ab, 0x01},
+		{0x1ac, 0x14},
+		{0x1ad, 0x01},
+		{0x1aa, 0x0e},
+		{0x1a2, 0xc0},
+		{0x1d3, 0xd6},
+		{0x1d2, 0xa3},
+		{0x1d1, 0xb0},
+		{0x1a0, 0x00},
+
+		/* config timing */
+		{0x009, 0xe8},
+		{0x00a, 0x09},
+		{0x00b, 0x18},
+		{0x00c, 0x01},
+		{0x00d, 0xe8},
+		{0x00e, 0x00},
+		{0x00f, 0x20},
+		{0x010, 0x00},
+		{0x011, 0x0d},
+		{0x012, 0x06},
+		{0x013, 0x2d},
+		{0x014, 0x2a},
+		{0x015, 0x06},
+		{0x008, 0x05},
+	};
+
+	for (int i = 0; i < sizeof(cfg_pll_data)/sizeof(reg_value_t); i++) {
+		hdmi_write(priv, cfg_pll_data[i].value, cfg_pll_data[i].reg);
+	}
+
+	return;
+}
+
+static void inno_hdmi_config_1920x1200p60(struct sf_hdmi_priv *priv)
+{
+	const reg_value_t cfg_pll_data[] = {
+		/* config pll: 1920x1200p, 60hz*/
+		{0x1a0, 0x01},
+		{0x1aa, 0x0f},
+		{0x1a1, 0x01},
+		{0x1a2, 0xc0},
+		{0x1a3, 0x9a},
+		{0x1a4, 0x25},
+		{0x1a5, 0x03},
+		{0x1a6, 0x64},
+		{0x1ab, 0x01},
+		{0x1ac, 0x14},
+		{0x1ad, 0x01},
+		{0x1aa, 0x0e},
+		{0x1a2, 0xc0},
+		{0x1d3, 0x51},
+		{0x1d2, 0xb8},
+		{0x1d1, 0x1e},
+		{0x1a0, 0x00},
+
+		/* config timing */
+		{0x009, 0x20},
+		{0x00a, 0x08},
+		{0x00b, 0xa0},
+		{0x00c, 0x00},
+		{0x00d, 0x70},
+		{0x00e, 0x00},
+		{0x00f, 0x20},
+		{0x010, 0x00},
+		{0x011, 0xd3},
+		{0x012, 0x04},
+		{0x013, 0x23},
+		{0x014, 0x20},
+		{0x015, 0x06},
+		{0x008, 0x01},
+	};
+
+	for (int i = 0; i < sizeof(cfg_pll_data)/sizeof(reg_value_t); i++) {
+		hdmi_write(priv, cfg_pll_data[i].value, cfg_pll_data[i].reg);
+	}
+
+	return;
+}
+
 static void inno_hdmi_tx_ctrl(struct sf_hdmi_priv *priv,vic_code_t vic)
 {
 	hdmi_write(priv, 0x06, 0x9f);
@@ -450,6 +510,14 @@ static void inno_hdmi_tx_phy_param_config(struct sf_hdmi_priv *priv,resolution_t
 		vic = VIC_3840x2160p60;
 		inno_hdmi_config_3840x2160p60(priv);
 		break;
+	case RES_2256_1504P_60HZ:
+		vic = 0;
+		inno_hdmi_config_2256x1504p60(priv);
+		break;
+	case RES_1920_1200P_60HZ:
+		vic = 0;
+		inno_hdmi_config_1920x1200p60(priv);
+		break;
 	}
 	inno_hdmi_tx_ctrl(priv, vic);
 
@@ -484,20 +552,10 @@ static int inno_hdmi_enable(struct udevice *dev, int panel_bpp,
 	if (!gBuiltinLCDActive)
 		inno_hdmi_tx_phy_param_config(priv,RES_1920_1080P_60HZ);
 	else {
-		hdmi_write(priv,0xe8,0x9);
-		hdmi_write(priv,0x9,0xa);
-		hdmi_write(priv,0x18,0xb);
-		hdmi_write(priv,0x1,0xc);
-		hdmi_write(priv,0xe8,0xd);
-		hdmi_write(priv,0x0, 0xe);
-		hdmi_write(priv,0x20,0xf);
-		hdmi_write(priv,0x0, 0x10);
-		hdmi_write(priv,0xd, 0x11);
-		hdmi_write(priv,0x6, 0x12);
-		hdmi_write(priv,0x2d,0x13);
-		hdmi_write(priv,0x2a,0x14);
-		hdmi_write(priv,0x6, 0x15);
-		hdmi_write(priv,0x5, 0x8);
+		if (edid->hactive.typ == 2256)
+			inno_hdmi_tx_phy_param_config(priv,RES_2256_1504P_60HZ);
+		if (edid->hactive.typ == 1920)
+			inno_hdmi_tx_phy_param_config(priv,RES_1920_1200P_60HZ);
 	}
 	inno_hdmi_tx_phy_power_on(priv);
 	inno_hdmi_tmds_driver_on(priv);

@@ -511,9 +511,9 @@ static int sf_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
 					ret = -EACCES;
 				}
 				else {
-					if (timing.hactive.typ == 2256 && timing.vactive.typ == 1504)
+					if ((timing.hactive.typ == 2256 && timing.vactive.typ == 1504) || (timing.hactive.typ == 1920 && timing.vactive.typ == 1200))
 						gBuiltinLCDActive = true;
-					pr_err("Display output: %s\n", gBuiltinLCDActive ? "Build-in LCD" : "HDMI");
+					pr_err("Display output: %s %dx%d\n", gBuiltinLCDActive ? "Build-in LCD" : "HDMI", timing.hactive.typ, timing.vactive.typ);
 					break;
 				}
 			}
@@ -592,48 +592,93 @@ static int sf_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
 			_SWITCH_CLOCK_CLK_U0_DC8200_CLK_PIX0_SOURCE_CLK_HDMITX0_PIXELCLK_;
 			dc_hw_init(dev);
 
-			uc_priv->xsize = 2256;
-			uc_priv->ysize = 1504;
-			uc_priv->bpix = VIDEO_BPP16;
+			if (timing.hactive.typ == 2256) {
+				uc_priv->xsize = 2256;
+				uc_priv->ysize = 1504;
+				uc_priv->bpix = VIDEO_BPP16;
 
-			writel(0xc0001fff, priv->regs_hi+0x00000014);
-			writel(0x00002000, priv->regs_hi+0x00001cc0);
-			//writel(uc_plat->base+0x1fa400, priv->regs_hi+0x00001530);
-			writel(0x00000000, priv->regs_hi+0x00001800);
-			writel(0x00000000, priv->regs_hi+0x000024d8);
-			writel(0x02f008d0, priv->regs_hi+0x000024e0);
-			writel(0x02f008d0, priv->regs_hi+0x00001810);
-			writel(uc_plat->base, priv->regs_hi+0x00001400);
-			writel(0x000011a0, priv->regs_hi+0x00001408);
-			writel(0x00000f61, priv->regs_hi+0x00001ce8);
-			writel(0x00002042, priv->regs_hi+0x00002510);
-			writel(0x808a3156, priv->regs_hi+0x00002508);
-			writel(0x8008e1b2, priv->regs_hi+0x00002500);
-			writel(0x10000000, priv->regs_hi+0x00001518);
-			writel(0x00003000, priv->regs_hi+0x00001cc0);
-			writel(0x00130000, priv->regs_hi+0x00001540);
-			writel(0x00000001, priv->regs_hi+0x00002540);
-			writel(0x80130000, priv->regs_hi+0x00001540);
-			writel(0x00130000, priv->regs_hi+0x00001544);
-			writel(0x00000002, priv->regs_hi+0x00002544);
-			writel(0x80130000, priv->regs_hi+0x00001544);
-			writel(0x00130000, priv->regs_hi+0x00001548);
-			writel(0x0000000c, priv->regs_hi+0x00002548);
-			writel(0x80130000, priv->regs_hi+0x00001548);
-			writel(0x00130000, priv->regs_hi+0x0000154c);
-			writel(0x0000000d, priv->regs_hi+0x0000254c);
-			writel(0x80130000, priv->regs_hi+0x0000154c);
-			writel(0x00000001, priv->regs_hi+0x00002518);
-			writel(0x00000000, priv->regs_hi+0x00001a28);
-			writel(0x09e808d0, priv->regs_hi+0x00001430);
-			writel(0x44900900, priv->regs_hi+0x00001438);
-			writel(0x060d05e0, priv->regs_hi+0x00001440);
-			writel(0xc2f485e3, priv->regs_hi+0x00001448);
-			writel(0x00000000, priv->regs_hi+0x000014b0);
-			writel(0x0000000a, priv->regs_hi+0x00001cd0);
-			writel(0x00000005, priv->regs_hi+0x000014b8);
-			//writel(0x00000052, priv->regs_hi+0x000014d0);
-			writel(0xffffffff, priv->regs_hi+0x00001528);
+				writel(0xc0001fff, priv->regs_hi+0x00000014);
+				writel(0x00002000, priv->regs_hi+0x00001cc0);
+				//writel(uc_plat->base+0x1fa400, priv->regs_hi+0x00001530);
+				writel(0x00000000, priv->regs_hi+0x00001800);
+				writel(0x00000000, priv->regs_hi+0x000024d8);
+				writel(0x02f008d0, priv->regs_hi+0x000024e0);
+				writel(0x02f008d0, priv->regs_hi+0x00001810);
+				writel(uc_plat->base, priv->regs_hi+0x00001400);
+				writel(0x000011a0, priv->regs_hi+0x00001408);
+				writel(0x00000f61, priv->regs_hi+0x00001ce8);
+				writel(0x00002042, priv->regs_hi+0x00002510);
+				writel(0x808a3156, priv->regs_hi+0x00002508);
+				writel(0x8008e1b2, priv->regs_hi+0x00002500);
+				writel(0x10000000, priv->regs_hi+0x00001518);
+				writel(0x00003000, priv->regs_hi+0x00001cc0);
+				writel(0x00130000, priv->regs_hi+0x00001540);
+				writel(0x00000001, priv->regs_hi+0x00002540);
+				writel(0x80130000, priv->regs_hi+0x00001540);
+				writel(0x00130000, priv->regs_hi+0x00001544);
+				writel(0x00000002, priv->regs_hi+0x00002544);
+				writel(0x80130000, priv->regs_hi+0x00001544);
+				writel(0x00130000, priv->regs_hi+0x00001548);
+				writel(0x0000000c, priv->regs_hi+0x00002548);
+				writel(0x80130000, priv->regs_hi+0x00001548);
+				writel(0x00130000, priv->regs_hi+0x0000154c);
+				writel(0x0000000d, priv->regs_hi+0x0000254c);
+				writel(0x80130000, priv->regs_hi+0x0000154c);
+				writel(0x00000001, priv->regs_hi+0x00002518);
+				writel(0x00000000, priv->regs_hi+0x00001a28);
+				writel(0x09e808d0, priv->regs_hi+0x00001430);
+				writel(0x44900900, priv->regs_hi+0x00001438);
+				writel(0x060d05e0, priv->regs_hi+0x00001440);
+				writel(0xc2f485e3, priv->regs_hi+0x00001448);
+				writel(0x00000000, priv->regs_hi+0x000014b0);
+				writel(0x0000000a, priv->regs_hi+0x00001cd0);
+				writel(0x00000005, priv->regs_hi+0x000014b8);
+				//writel(0x00000052, priv->regs_hi+0x000014d0);
+				writel(0xffffffff, priv->regs_hi+0x00001528);
+			}
+
+			if (timing.hactive.typ == 1920) {
+				uc_priv->xsize = 1920;
+				uc_priv->ysize = 1200;
+				uc_priv->bpix = VIDEO_BPP32;
+
+				writel(0xc0001fff, priv->regs_hi+0x00000014);
+				writel(0x00002000, priv->regs_hi+0x00001cc0);
+				writel(0x00000000, priv->regs_hi+0x00001800);
+				writel(0x00000000, priv->regs_hi+0x000024d8);
+				writel(0x02580780, priv->regs_hi+0x000024e0);
+				writel(0x02580780, priv->regs_hi+0x00001810);
+				writel(uc_plat->base, priv->regs_hi+0x00001400);
+				writel(0x00001e00, priv->regs_hi+0x00001408);
+				writel(0x00000f61, priv->regs_hi+0x00001ce8);
+				writel(0x00002042, priv->regs_hi+0x00002510);
+				writel(0x808a3156, priv->regs_hi+0x00002508);
+				writel(0x8008e1b2, priv->regs_hi+0x00002500);
+				writel(0x14000000, priv->regs_hi+0x00001518);
+				writel(0x00003000, priv->regs_hi+0x00001cc0);
+				writel(0x00000000, priv->regs_hi+0x00001540);
+				writel(0x00000001, priv->regs_hi+0x00002540);
+				writel(0x80000000, priv->regs_hi+0x00001540);
+				writel(0x00000000, priv->regs_hi+0x00001544);
+				writel(0x00000002, priv->regs_hi+0x00002544);
+				writel(0x80000000, priv->regs_hi+0x00001544);
+				writel(0x00000000, priv->regs_hi+0x00001548);
+				writel(0x0000000c, priv->regs_hi+0x00002548);
+				writel(0x80000000, priv->regs_hi+0x00001548);
+				writel(0x00000000, priv->regs_hi+0x0000154c);
+				writel(0x0000000d, priv->regs_hi+0x0000254c);
+				writel(0x80000000, priv->regs_hi+0x0000154c);
+				writel(0x00000001, priv->regs_hi+0x00002518);
+				writel(0x00000000, priv->regs_hi+0x00001a28);
+				writel(0x08200780, priv->regs_hi+0x00001430);
+				writel(0xc3e807b0, priv->regs_hi+0x00001438);
+				writel(0x04d304b0, priv->regs_hi+0x00001440);
+				writel(0xc25c84b3, priv->regs_hi+0x00001448);
+				writel(0x00000000, priv->regs_hi+0x000014b0);
+				writel(0x0000000a, priv->regs_hi+0x00001cd0);
+				writel(0x00000005, priv->regs_hi+0x000014b8);
+				writel(0xf0000000, priv->regs_hi+0x00001528);
+			}
 		}
 		writel(0x00001111, priv->regs_hi+0x00001418);
 		writel(0x00000000, priv->regs_hi+0x00001410);
